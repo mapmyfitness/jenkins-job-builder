@@ -40,6 +40,15 @@ import jenkins_jobs.local_yaml as local_yaml
 logger = logging.getLogger(__name__)
 MAGIC_MANAGE_STRING = "<!-- Managed by Jenkins Job Builder -->"
 
+from collections import defaultdict
+import string
+
+class SafeDict(dict):
+    def __missing__(self, key):
+        return '{' + key + '}'
+    
+FORMATTER = string.Formatter()
+
 
 # Python 2.6's minidom toprettyxml produces broken output by adding extraneous
 # whitespace around data. This patches the broken implementation with one taken
@@ -91,7 +100,7 @@ def deep_format(obj, paramdict):
             if result is not None:
                 ret = paramdict[result.group("key")]
             else:
-                ret = obj.format(**paramdict)
+                ret = FORMATTER.vformat(obj, (), SafeDict(**paramdict))
         except KeyError as exc:
             missing_key = exc.message
             desc = "%s parameter missing to format %s\nGiven:\n%s" % (
