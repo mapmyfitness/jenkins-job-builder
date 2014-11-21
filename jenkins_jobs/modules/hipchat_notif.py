@@ -94,8 +94,8 @@ class HipChat(jenkins_jobs.modules.base.Base):
             logger.warn('start-notify is deprecated please use notify-start')
         if hipchat.get('start-notify') is not None or \
            hipchat.get('notify-start') is not None:
-            value = str(hipchat.get('notify-start'), '') or \
-                str(hipchat.get('start-notify'), '')
+            value = str(hipchat.get('notify-start', '')) or \
+                str(hipchat.get('start-notify', ''))
             value = value.lower()
             if value == '':
                 value = 'false'
