@@ -74,37 +74,13 @@ class HipChat(jenkins_jobs.modules.base.Base):
     sequence = 80
 
     def __init__(self, registry):
-        self.authToken = None
-        self.jenkinsUrl = None
         self.registry = registry
-
-    def _load_global_data(self):
-        """Load data from the global config object.
-           This is done lazily to avoid looking up the '[hipchat]' section
-           unless actually required.
-        """
-        if(not self.authToken):
-            try:
-                self.authToken = self.registry.global_config.get(
-                    'hipchat', 'authtoken')
-                # Require that the authtoken is non-null
-                if self.authToken == '':
-                    raise jenkins_jobs.errors.JenkinsJobsException(
-                        "Hipchat authtoken must not be a blank string")
-            except (configparser.NoSectionError,
-                    jenkins_jobs.errors.JenkinsJobsException) as e:
-                logger.fatal("The configuration file needs a hipchat section" +
-                             " containing authtoken:\n{0}".format(e))
-                sys.exit(1)
-            self.jenkinsUrl = self.registry.global_config.get('jenkins', 'url')
 
     def gen_xml(self, parser, xml_parent, data):
         logger = logging.getLogger("%s:HipChat" % __name__)
         hipchat = data.get('hipchat')
         if not hipchat or not hipchat.get('enabled', True):
             return
-        self._load_global_data()
-
         properties = xml_parent.find('properties')
         if properties is None:
             properties = XML.SubElement(xml_parent, 'properties')
@@ -148,8 +124,10 @@ class HipChat(jenkins_jobs.modules.base.Base):
             publishers = XML.SubElement(xml_parent, 'publishers')
         hippub = XML.SubElement(publishers,
                                 'jenkins.plugins.hipchat.HipChatNotifier')
-        XML.SubElement(hippub, 'jenkinsUrl').text = self.jenkinsUrl
-        XML.SubElement(hippub, 'authToken').text = self.authToken
+        
+        # If we don't specify anything for these they will be picked up from the jenkins master config
+        # XML.SubElement(hippub, 'jenkinsUrl').text = self.jenkinsUrl
+        # XML.SubElement(hippub, 'authToken').text = self.authToken
         # The room specified here is the default room.  The default is
         # redundant in this case since a room must be specified.  Leave empty.
         XML.SubElement(hippub, 'room').text = ''

@@ -186,10 +186,16 @@ class LocalLoader(OrderedConstructor, yaml.Loader):
         # keys returned is consistent across multiple python versions
         self.add_constructor(yaml.resolver.BaseResolver.DEFAULT_MAPPING_TAG,
                              type(self).construct_yaml_map)
-
-        if hasattr(self.stream, 'name'):
-            self.search_path.add(os.path.normpath(
-                os.path.dirname(self.stream.name)))
+        
+        #######################################
+        #This is really stupid it adds to the search paths
+        #the directory of the file for the passed in yaml steam
+        #and can potentially mess up our search paths for our include because
+        #it might find - !include macros.yaml in multiple locations
+        #######################################
+        #if isinstance(self.stream, file):
+        #    self.search_path.add(os.path.normpath(
+        #        os.path.dirname(self.stream.name)))
         self.search_path.add(os.path.normpath(os.path.curdir))
 
     def _find_file(self, filename):
