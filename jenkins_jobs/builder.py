@@ -644,8 +644,6 @@ class Builder(object):
         self.ignore_cache = ignore_cache
 
     def load_files(self, fn):
-        self.parser = YamlParser(self.global_config)
-
         # handle deprecated behavior
         if not hasattr(fn, '__iter__'):
             logger.warning(
